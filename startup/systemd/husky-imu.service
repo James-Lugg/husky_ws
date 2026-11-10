@@ -1,0 +1,22 @@
+[Unit]
+Description=JY901B ROS 2 IMU
+Wants=network-online.target
+After=network-online.target
+PartOf=husky.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=robot
+SupplementaryGroups=dialout
+WorkingDirectory=/home/robot/husky_ws
+Environment=HOME=/home/robot
+EnvironmentFile=/etc/husky/husky.env
+ExecStart=/home/robot/husky_ws/startup/run-node imu
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=15
+
+[Install]
+WantedBy=husky.target

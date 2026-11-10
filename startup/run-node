@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -eo pipefail
+root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source /opt/ros/lyrical/setup.bash
+source "$root/install/current/local_setup.bash"
+export PYTHONPATH="$root/husky_essentials/src${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONUNBUFFERED=1
+set -u
+check_serial() {
+  case "$1" in
+    /dev/serial/by-id/*|/dev/husky-*) ;;
+    *) echo "Set a persistent serial device in /etc/husky/husky.env; refusing $1" >&2; exit 1 ;;
+  esac
+  [[ -c "$1" && -r "$1" && -w "$1" ]] || {
+    echo "Waiting for accessible serial device $1" >&2; exit 1;
+  }
+}
+case "${1:-}" in
+  imu)
+    check_serial "$IMU_DEVICE"
+    exec ros2 run jy901b_driver jy901b_node --ros-args -p "port:=$IMU_DEVICE" ;;
+  a200)
+    check_serial "$A200_DEVICE"
+    exec "$root/husky_essentials/build/a200_server" "$A200_DEVICE" 9000 ;;
+  telemetry) exec ros2 run husky_msgs husky_telemetry_node ;;
+  joycon) exec ros2 run joy joy_node && ros2 run husky_joycon husky_joycon_node ;;
+  cmd_vel) exec ros2 run husky_joycon husky_cmd_vel_node ;;
+  velodyne) exec ros2 launch velodyne velodyne-all-nodes-VLP16-launch.py ;;
+  *) echo "Usage: $0 {imu|a200|telemetry|joycon|cmd_vel|velodyne}" >&2; exit 2 ;;
+esac

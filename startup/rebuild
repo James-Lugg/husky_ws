@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -eo pipefail
+root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$root"
+source /opt/ros/lyrical/setup.bash
+make -B -C husky_essentials -j2
+colcon --log-base log/startup-build build \
+  --base-paths husky_ros2_ws/imu_ws/jy901b_driver husky_ros2_ws/husky_msgs/src husky_ros2_ws/husky_joycon_ws/src velodyne_ws/src \
+  --build-base build/current --install-base install/current --executor sequential \
+  --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_TESTING=OFF

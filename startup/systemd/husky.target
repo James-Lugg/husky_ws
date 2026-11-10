@@ -1,0 +1,7 @@
+[Unit]
+Description=Husky sensors, telemetry, joystick and velocity control
+Wants=husky-velodyne.service husky-imu.service husky-a200.service husky-telemetry-node.service husky-joycon.service husky-cmd-vel.service
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target

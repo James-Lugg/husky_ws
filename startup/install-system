@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ $EUID == 0 ]] || { echo "Run: sudo $0" >&2; exit 1; }
+root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+[[ -f "$root/install/current/setup.bash" && -x "$root/husky_essentials/build/a200_server" ]] || {
+  echo "Run $root/startup/rebuild first" >&2; exit 1;
+}
+install -d /etc/husky
+if [[ ! -e /etc/husky/husky.env ]]; then
+  install -m 644 "$root/startup/husky.env" /etc/husky/husky.env
+fi
+install -m 644 "$root"/startup/systemd/* /etc/systemd/system/
+systemctl daemon-reload
+systemd-analyze verify /etc/systemd/system/husky*.service /etc/systemd/system/husky.target
+systemctl enable --now husky.target
+# Load rebuilt nodes and pull in new services on an active target.
+systemctl restart husky-telemetry-node.service husky-joycon.service husky-cmd-vel.service
+echo 'Installed and enabled husky.target. Configure persistent serial IDs in /etc/husky/husky.env.'

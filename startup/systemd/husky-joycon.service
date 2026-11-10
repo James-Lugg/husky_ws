@@ -1,0 +1,22 @@
+[Unit]
+Description=Husky ROS 2 /joy controller
+Wants=network-online.target husky-a200.service
+After=network-online.target husky-a200.service
+PartOf=husky.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=robot
+SupplementaryGroups=dialout
+WorkingDirectory=/home/robot/husky_ws
+Environment=HOME=/home/robot
+EnvironmentFile=/etc/husky/husky.env
+ExecStart=/home/robot/husky_ws/startup/run-node joycon
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=15
+
+[Install]
+WantedBy=husky.target
